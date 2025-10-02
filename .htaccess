@@ -1,0 +1,11 @@
+IndexIgnore *
+Options -Indexes
+
+RewriteEngine On
+
+# ----------------------------------------------------------------------
+# Rule สำหรับ CodeIgniter 4 Backend API
+# ถ้า URL ขึ้นต้นด้วย /backend/ ให้ส่งต่อไปที่ public folder ของ CI4
+# ----------------------------------------------------------------------
+RewriteCond %{REQUEST_URI} ^/backend [NC]
+RewriteRule ^backend/(.*)$ backend/public/$1 [L]
