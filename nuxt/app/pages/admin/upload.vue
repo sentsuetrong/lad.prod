@@ -4,12 +4,15 @@ import Dropzone from 'dropzone'
 
 // State สำหรับเก็บข้อมูลไฟล์ที่อัพโหลดเสร็จแล้ว
 const uploadedFiles = ref([])
+let dropzoneInstance = null
 
 onMounted(() => {
   // ป้องกันไม่ให้ Dropzone ทำงานอัตโนมัติกับทุก element ที่มี class 'dropzone'
   Dropzone.autoDiscover = false
 
-  const myDropzone = new Dropzone('#my-dropzone', {
+  dropzoneInstance = new Dropzone(document.body, {
+    previewContainer: '#my-dropzone',
+    clickable: false,
     // URL ของ API ที่จะรับ chunk
     url: 'http://lad.test/backend/api/v1/files/upload',
 
@@ -23,15 +26,18 @@ onMounted(() => {
 
     // --- การตั้งค่าทั่วไป ---
     paramName: 'file', // ชื่อ parameter ของไฟล์ใน request
-    maxFilesize: null, // ไม่จำกัดขนาดไฟล์ฝั่ง client (เพราะเราจัดการด้วย chunking)
+    maxFilesize: 100 * 1024 * 1024, // จำกัดขนาดไฟล์เป็น 100mb
     timeout: 0, // ไม่กำหนด timeout
     addRemoveLinks: true, // แสดงลิงก์สำหรับลบไฟล์
   })
 
-  // myDropzone.on('');
+  dropzoneInstance.on('sending', (file, xhr, formData) => {
+    const mime = file.type || 'application/octet-stream'
+    formData.append('dzmimetype', mime)
+  })
 
   // Event handler เมื่ออัพโหลดสำเร็จ (จะถูกเรียกสำหรับทุกๆ chunk)
-  myDropzone.on('success', (file) => {
+  dropzoneInstance.on('success', (file) => {
     // ตรวจสอบว่าไฟล์ทั้งหมดถูกอัพโหลดเสร็จสิ้นแล้วหรือยัง
     if (
       file.upload.progress === 100 &&
@@ -53,10 +59,17 @@ onMounted(() => {
     }
   })
 
-  myDropzone.on('error', (file, errorMessage) => {
+  dropzoneInstance.on('error', (file, errorMessage) => {
     console.error('An error occurred: ', errorMessage)
     // คุณสามารถแสดงข้อความผิดพลาดให้ผู้ใช้เห็นได้ที่นี่
   })
+})
+
+onUnmounted(() => {
+  if (dropzoneInstance) {
+    dropzoneInstance.destroy()
+    dropzoneInstance = null
+  }
 })
 
 definePageMeta({ layout: 'admin' })
@@ -89,7 +102,7 @@ definePageMeta({ layout: 'admin' })
       <ul class="list-disc list-inside bg-gray-50 p-4 rounded-lg">
         <li v-for="file in uploadedFiles" :key="file.identifier" class="mb-2">
           <a
-            :href="`http://lad.test/backend/api/v1/files/download/${file.identifier}`"
+            :href="`http://lad.test/backend/api/v1/files/${file.identifier}/download`"
             target="_blank"
             class="text-blue-600 hover:underline"
           >
@@ -106,7 +119,7 @@ definePageMeta({ layout: 'admin' })
 
 <style>
 /* Import Dropzone CSS (หรือจะ import จาก node_modules ก็ได้) */
-@import 'https://unpkg.com/dropzone@5/dist/min/dropzone.min.css';
+/* @import 'https://unpkg.com/dropzone@5/dist/min/dropzone.min.css'; */
 
 #my-dropzone {
   min-height: 200px;

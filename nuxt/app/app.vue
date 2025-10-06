@@ -5,6 +5,7 @@
         <li><NuxtLink to="/">แดชบอร์ด</NuxtLink></li>
         <li><NuxtLink to="/admin">สำหรับผู้ดูแลระบบ</NuxtLink></li>
         <li><NuxtLink to="/admin/upload">อัพโหลด</NuxtLink></li>
+        <li><NuxtLink to="/admin/gallery">แกลเลอรี่</NuxtLink></li>
       </ul>
     </nav>
   </header>

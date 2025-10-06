@@ -34,4 +34,9 @@ export default defineNuxtConfig({
   plugins: [
     // 'dayjs'
   ],
+  nitro: {
+    output: {
+      publicDir: '../dashboard',
+    },
+  },
 })
